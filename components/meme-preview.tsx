@@ -21,28 +21,34 @@ const MemePreview = ({
   const guideXPercent = 50;
   const guideYPercent = 50;
 
-  const handleDragEnd = (type: "top" | "bottom", event: any, info: any) => {
+  const handleDragEnd = (type: "top" | "bottom", event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
     if (!memeRef || !('current' in memeRef) || !memeRef.current) return;
     
     const container = memeRef.current;
     const rect = container.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
     
-    const xPercent = (x / rect.width) * 100;
-    const yPercent = (y / rect.height) * 100;
+    // Get the final position from the dragged element
+    const target = event.target as HTMLElement;
+    const targetRect = target.getBoundingClientRect();
+    
+    // Calculate center position of the dragged element relative to container
+    const centerX = targetRect.left + targetRect.width / 2 - rect.left;
+    const centerY = targetRect.top + targetRect.height / 2 - rect.top;
+    
+    const xPercent = (centerX / rect.width) * 100;
+    const yPercent = (centerY / rect.height) * 100;
     
     if (type === "top") {
       setText(prev => ({
         ...prev,
-        topPosXPercent: xPercent,
-        topPosYPercent: yPercent
+        topPosXPercent: Math.max(0, Math.min(100, xPercent)),
+        topPosYPercent: Math.max(0, Math.min(100, yPercent))
       }));
     } else {
       setText(prev => ({
         ...prev,
-        bottomPosXPercent: xPercent,
-        bottomPosYPercent: yPercent
+        bottomPosXPercent: Math.max(0, Math.min(100, xPercent)),
+        bottomPosYPercent: Math.max(0, Math.min(100, yPercent))
       }));
     }
     setIsDragging(false);
