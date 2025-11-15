@@ -23,21 +23,21 @@ const MemePreview = ({
 
   const handleDragEnd = (type: "top" | "bottom", event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
     if (!memeRef || !('current' in memeRef) || !memeRef.current) return;
-    
+
     const container = memeRef.current;
     const rect = container.getBoundingClientRect();
-    
+
     // Get the final position from the dragged element
     const target = event.target as HTMLElement;
     const targetRect = target.getBoundingClientRect();
-    
+
     // Calculate center position of the dragged element relative to container
     const centerX = targetRect.left + targetRect.width / 2 - rect.left;
     const centerY = targetRect.top + targetRect.height / 2 - rect.top;
-    
+
     const xPercent = (centerX / rect.width) * 100;
     const yPercent = (centerY / rect.height) * 100;
-    
+
     if (type === "top") {
       setText(prev => ({
         ...prev,

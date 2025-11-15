@@ -36,6 +36,8 @@ interface GiphyResponse {
   data: GiphyResult[];
 }
 
+const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
+
 // Fetch memes from Imgflip
 async function fetchImgflipMemes(): Promise<Meme[]> {
   try {
@@ -62,7 +64,7 @@ async function fetchTenorMemes(): Promise<Meme[]> {
     const res = await axios.get<TenorResponse>(
       `https://tenor.googleapis.com/v2/featured?key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&client_key=my_test_app&limit=50&media_filter=gif`
     );
-    
+
     return res.data.results.map((item, index) => {
       const media = item.media_formats.gif || item.media_formats.tinygif;
       return {
@@ -86,9 +88,9 @@ async function fetchGiphyMemes(): Promise<Meme[]> {
     // Using Giphy's public API endpoint for trending GIFs
     // Note: For production, you should use your own API key
     const res = await axios.get<GiphyResponse>(
-      `https://api.giphy.com/v1/gifs/trending?api_key=dc6zaTOxFJmzC&limit=50&rating=g`
+      `https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=50&rating=g`
     );
-    
+
     return res.data.data.map((item) => ({
       id: `giphy-${item.id}`,
       name: item.title || `Giphy Meme`,
