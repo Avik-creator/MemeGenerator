@@ -9,15 +9,13 @@ import { flushSync } from "react-dom";
 import { Meme } from "@/types/text";
 import { Button } from "./ui/button";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { fetchMemes, searchMemes } from "@/app/actions/memes";
-import { MemeSource } from "@/types/text";
 
 const MemeContainer = () => {
     const { setSelectedMeme, filteredMemes, searchQuery, setSearchQuery, setMemes } = useMemeStore();
     const router = useRouter();
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedSource, setSelectedSource] = useState<MemeSource | "all">("all");
     const itemsPerPage = 25;
 
     // Fetch memes using React Query with server action
@@ -35,32 +33,25 @@ const MemeContainer = () => {
         }
     }, [data, setMemes]);
 
-    // Filter by source if selected
-    const sourceFilteredMemes = useMemo(() => {
-        if (!filteredMemes) return [];
-        if (selectedSource === "all") return filteredMemes;
-        return filteredMemes.filter(meme => meme.source === selectedSource);
-    }, [filteredMemes, selectedSource]);
-
     // Calculate paginated results
     const paginatedMemes = useMemo(() => {
-        if (!sourceFilteredMemes) return [];
+        if (!filteredMemes) return [];
 
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
-        return sourceFilteredMemes.slice(startIndex, endIndex);
-    }, [sourceFilteredMemes, currentPage]);
+        return filteredMemes.slice(startIndex, endIndex);
+    }, [filteredMemes, currentPage]);
 
     // Calculate total pages
     const totalPages = useMemo(() => {
-        if (!sourceFilteredMemes) return 0;
-        return Math.ceil(sourceFilteredMemes.length / itemsPerPage);
-    }, [sourceFilteredMemes]);
+        if (!filteredMemes) return 0;
+        return Math.ceil(filteredMemes.length / itemsPerPage);
+    }, [filteredMemes]);
 
-    // Reset to first page when search or source filter changes
+    // Reset to first page when search changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, selectedSource]);
+    }, [searchQuery]);
 
     const handleMemeClick = (meme: Meme) => {
         flushSync(() => {
@@ -94,42 +85,21 @@ const MemeContainer = () => {
         </div>
     )
 
-    // Meme item component with GIF support
+    // Meme item component
     const MemeItem = ({ item }: { item: Meme }) => (
         <div
             className="w-full transition-all duration-200 hover:scale-[103%] cursor-pointer"
             onClick={() => handleMemeClick(item)}
         >
-            <div className="md:h-56 h-42 w-full rounded-xl overflow-hidden relative">
-                {item.isGif ? (
-                    <img
-                        className="h-full w-full object-cover brightness-90 hover:brightness-100 transition-all duration-200"
-                        src={item.url}
-                        alt={`${item.name} meme`}
-                        loading="lazy"
-                    />
-                ) : (
-                    <Image
-                        className="h-full w-full object-cover brightness-90 hover:brightness-100 transition-all duration-200"
-                        width={600}
-                        height={600}
-                        src={item.url}
-                        alt={`${item.name} meme`}
-                        loading="lazy"
-                    />
-                )}
-                <div className="absolute top-2 right-2 flex items-center gap-1">
-                    {item.isGif && (
-                        <div className="bg-black/60 text-white text-xs px-2 py-1 rounded">
-                            GIF
-                        </div>
-                    )}
-                    {item.source && (
-                        <div className="bg-purple-600/80 text-white text-xs px-2 py-1 rounded capitalize">
-                            {item.source}
-                        </div>
-                    )}
-                </div>
+            <div className="md:h-56 h-42 w-full rounded-xl overflow-hidden">
+                <Image
+                    className="h-full w-full object-cover brightness-90 hover:brightness-100 transition-all duration-200"
+                    width={600}
+                    height={600}
+                    src={item.url}
+                    alt={`${item.name} meme`}
+                    loading="lazy"
+                />
             </div>
             <p className="md:text-sm text-xs font-medium text-center mt-2 text-gray-200">
                 {item.name}
@@ -149,44 +119,6 @@ const MemeContainer = () => {
                 <p className="md:text-lg text-sm font-medium mb-1">No memes found</p>
                 <p className="md:text-sm text-xs">Try adjusting your search terms</p>
             </motion.div>
-        </div>
-    );
-
-    // Source filter tabs
-    const SourceFilter = () => (
-        <div className="col-span-full flex items-center gap-2 mb-4 flex-wrap">
-            <Button
-                onClick={() => setSelectedSource("all")}
-                variant={selectedSource === "all" ? "default" : "secondary"}
-                size="sm"
-                className="md:text-sm text-xs"
-            >
-                All
-            </Button>
-            <Button
-                onClick={() => setSelectedSource("imgflip")}
-                variant={selectedSource === "imgflip" ? "default" : "secondary"}
-                size="sm"
-                className="md:text-sm text-xs"
-            >
-                Imgflip
-            </Button>
-            <Button
-                onClick={() => setSelectedSource("tenor")}
-                variant={selectedSource === "tenor" ? "default" : "secondary"}
-                size="sm"
-                className="md:text-sm text-xs"
-            >
-                Tenor
-            </Button>
-            <Button
-                onClick={() => setSelectedSource("giphy")}
-                variant={selectedSource === "giphy" ? "default" : "secondary"}
-                size="sm"
-                className="md:text-sm text-xs"
-            >
-                Giphy
-            </Button>
         </div>
     );
 
@@ -265,16 +197,13 @@ const MemeContainer = () => {
             {/* Search Header */}
             {searchQuery && <SearchHeader />}
 
-            {/* Source Filter */}
-            <SourceFilter />
-
             {/* Memes Grid */}
             <div className="grid lg:grid-cols-5 md:grid-cols-3 grid-cols-2 gap-6 w-full">
                 {isLoading ? (
                     Array.from({ length: 10 }).map((_, idx) => (
                         <LoadingSkeleton key={`skeleton-${idx}`} />
                     ))
-                ) : searchQuery && sourceFilteredMemes?.length === 0 ? (
+                ) : searchQuery && filteredMemes?.length === 0 ? (
                     <NoResults />
                 ) : (
                     paginatedMemes?.map((item: Meme, idx: number) => (
@@ -284,7 +213,7 @@ const MemeContainer = () => {
             </div>
 
             {/* Pagination */}
-            {!isLoading && sourceFilteredMemes && sourceFilteredMemes.length > 0 && (
+            {!isLoading && filteredMemes && filteredMemes.length > 0 && (
                 <Pagination />
             )}
         </motion.div>
