@@ -57,18 +57,27 @@ const MemePreview = ({
   return (
     <div className="lg:w-3/5 w-full">
       <h2 className="md:text-sm text-xs">Your Meme Preview</h2>
-      <div className={`w-full border border-neutral-700 lg:h-[30rem] md:h-[26rem] h-80 rounded-xl mt-2 overflow-hidden`}>
-        {image && (
-          <div
-            ref={memeRef}
-            className="relative w-full h-full"
-          >
-            <img
-              src={image}
-              alt=""
-              aria-hidden
-              className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
-            />
+            <div className={`w-full border border-neutral-700 lg:h-[30rem] md:h-[26rem] h-80 rounded-xl mt-2 overflow-hidden`}>
+                {image && (
+                    <div
+                        ref={memeRef}
+                        className="relative w-full h-full"
+                    >
+                        {image.endsWith('.gif') || image.includes('giphy.com') || image.includes('tenor.com') ? (
+                            <img
+                                src={image}
+                                alt=""
+                                aria-hidden
+                                className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
+                            />
+                        ) : (
+                            <img
+                                src={image}
+                                alt=""
+                                aria-hidden
+                                className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
+                            />
+                        )}
 
             {isDragging && (
               <>
