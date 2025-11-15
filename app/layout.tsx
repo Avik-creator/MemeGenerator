@@ -16,6 +16,27 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MemeGenerator - Create Memes Quickly",
   description: "Generate memes without efforts just like you like to sleep.",
+  openGraph: {
+    title: "MemeGenerator - Create Memes Quickly",
+    description: "Generate memes without efforts just like you like to sleep.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MemeGenerator - Create Memes Quickly",
+    description: "Generate memes without efforts just like you like to sleep.",
+    images: [
+      {
+        url: "/og-image.png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
