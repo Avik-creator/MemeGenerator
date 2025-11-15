@@ -1,7 +1,7 @@
 "use server"
 
 import axios from "axios";
-import { Meme } from "@/types/text";
+import { Meme, MemeSource } from "@/types/text";
 
 export interface MemesResponse {
   success: boolean;
@@ -36,20 +36,32 @@ interface GiphyResponse {
   data: GiphyResult[];
 }
 
-const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
+const GIPHY_API_KEY = process.env.GIPHY_API_KEY || "dc6zaTOxFJmzC"; // Fallback to public key
+const TENOR_API_KEY = process.env.TENOR_API_KEY || "AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ"; // Fallback to public key
 
 // Fetch memes from Imgflip
-async function fetchImgflipMemes(): Promise<Meme[]> {
+async function fetchImgflipMemes(searchQuery?: string): Promise<Meme[]> {
   try {
     const res = await axios.get<MemesResponse>(`https://api.imgflip.com/get_memes`);
-    return res.data.data.memes.map(meme => ({
+    let memes = res.data.data.memes.map(meme => ({
       id: meme.id,
       name: meme.name,
       url: meme.url,
       width: meme.width,
       height: meme.height,
       box_count: meme.box_count,
+      source: "imgflip" as MemeSource,
+      isGif: false,
     }));
+
+    // Filter by search query if provided
+    if (searchQuery) {
+      memes = memes.filter(meme =>
+        meme.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    return memes;
   } catch (error) {
     console.error("Error fetching Imgflip memes:", error);
     return [];
@@ -57,13 +69,13 @@ async function fetchImgflipMemes(): Promise<Meme[]> {
 }
 
 // Fetch memes from Tenor
-async function fetchTenorMemes(): Promise<Meme[]> {
+async function fetchTenorMemes(searchQuery?: string): Promise<Meme[]> {
   try {
-    // Using Tenor's public API endpoint for trending GIFs
-    // Note: For production, you may want to use an API key
-    const res = await axios.get<TenorResponse>(
-      `https://tenor.googleapis.com/v2/featured?key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&client_key=my_test_app&limit=50&media_filter=gif`
-    );
+    const endpoint = searchQuery
+      ? `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(searchQuery)}&key=${TENOR_API_KEY}&client_key=my_test_app&limit=50&media_filter=gif`
+      : `https://tenor.googleapis.com/v2/featured?key=${TENOR_API_KEY}&client_key=my_test_app&limit=50&media_filter=gif`;
+
+    const res = await axios.get<TenorResponse>(endpoint);
 
     return res.data.results.map((item, index) => {
       const media = item.media_formats.gif || item.media_formats.tinygif;
@@ -74,6 +86,8 @@ async function fetchTenorMemes(): Promise<Meme[]> {
         width: media?.dims?.[0] || 500,
         height: media?.dims?.[1] || 500,
         box_count: 2, // Default box count for meme templates
+        source: "tenor" as MemeSource,
+        isGif: true,
       };
     }).filter(meme => meme.url !== "");
   } catch (error) {
@@ -83,13 +97,13 @@ async function fetchTenorMemes(): Promise<Meme[]> {
 }
 
 // Fetch memes from Giphy
-async function fetchGiphyMemes(): Promise<Meme[]> {
+async function fetchGiphyMemes(searchQuery?: string): Promise<Meme[]> {
   try {
-    // Using Giphy's public API endpoint for trending GIFs
-    // Note: For production, you should use your own API key
-    const res = await axios.get<GiphyResponse>(
-      `https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=50&rating=g`
-    );
+    const endpoint = searchQuery
+      ? `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(searchQuery)}&limit=50&rating=g`
+      : `https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=50&rating=g`;
+
+    const res = await axios.get<GiphyResponse>(endpoint);
 
     return res.data.data.map((item) => ({
       id: `giphy-${item.id}`,
@@ -98,6 +112,8 @@ async function fetchGiphyMemes(): Promise<Meme[]> {
       width: parseInt(item.images.original.width) || 500,
       height: parseInt(item.images.original.height) || 500,
       box_count: 2, // Default box count for meme templates
+      source: "giphy" as MemeSource,
+      isGif: true,
     })).filter(meme => meme.url !== "");
   } catch (error) {
     console.error("Error fetching Giphy memes:", error);
@@ -106,13 +122,13 @@ async function fetchGiphyMemes(): Promise<Meme[]> {
 }
 
 // Main function to fetch memes from all sources
-export async function fetchMemes(): Promise<MemesResponse> {
+export async function fetchMemes(searchQuery?: string): Promise<MemesResponse> {
   try {
     // Fetch from all sources in parallel
     const [imgflipMemes, tenorMemes, giphyMemes] = await Promise.all([
-      fetchImgflipMemes(),
-      fetchTenorMemes(),
-      fetchGiphyMemes(),
+      fetchImgflipMemes(searchQuery),
+      fetchTenorMemes(searchQuery),
+      fetchGiphyMemes(searchQuery),
     ]);
 
     // Combine all memes
@@ -128,5 +144,13 @@ export async function fetchMemes(): Promise<MemesResponse> {
     console.error("Error fetching memes:", error);
     throw new Error("Failed to fetch memes");
   }
+}
+
+// Search memes across all sources
+export async function searchMemes(query: string): Promise<MemesResponse> {
+  if (!query || !query.trim()) {
+    return fetchMemes();
+  }
+  return fetchMemes(query.trim());
 }
 

@@ -1,3 +1,5 @@
+export type MemeSource = "imgflip" | "tenor" | "giphy";
+
 export interface Meme {
     id: string;
     name: string;
@@ -5,6 +7,8 @@ export interface Meme {
     width: number;
     height: number;
     box_count: number;
+    source?: MemeSource;
+    isGif?: boolean;
 }
 
 export interface text {
