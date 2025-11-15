@@ -20,12 +20,12 @@ const HeroHeader = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLocalSearchQuery(value);
-    
+
     // Debounce the search query update
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
-    
+
     debounceTimer.current = setTimeout(() => {
       setSearchQuery(value);
     }, 500); // 500ms debounce delay
@@ -56,7 +56,7 @@ const HeroHeader = () => {
         transition={{ duration: 0.4, ease: "easeOut", delay: 0.7 }}
         className="-mt-4 lg:text-7xl md:text-6xl text-5xl font-semibold"
       >
-        Without Efforts
+        Without Efforts Just Like You Like to Sleep.
       </motion.h2>
       <motion.div
         initial={{ y: 30, opacity: 0, filter: "blur(10px)" }}

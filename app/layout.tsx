@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MemeGenerator - Create Memes Quickly",
-  description: "Generate memes without efforts using our meme generator",
+  description: "Generate memes without efforts just like you like to sleep.",
 };
 
 export default function RootLayout({

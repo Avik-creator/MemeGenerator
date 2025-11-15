@@ -63,12 +63,12 @@ const MemePreview = ({
             ref={memeRef}
             className="relative w-full h-full"
           >
-                        <img
-                            src={image}
-                            alt=""
-                            aria-hidden
-                            className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
-                        />
+            <img
+              src={image}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
+            />
 
             {isDragging && (
               <>
