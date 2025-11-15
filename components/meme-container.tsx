@@ -57,10 +57,10 @@ const MemeContainer = () => {
         return Math.ceil(sourceFilteredMemes.length / itemsPerPage);
     }, [sourceFilteredMemes]);
 
-    // Reset to first page when search changes
+    // Reset to first page when search or source filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery]);
+    }, [searchQuery, selectedSource]);
 
     const handleMemeClick = (meme: Meme) => {
         flushSync(() => {

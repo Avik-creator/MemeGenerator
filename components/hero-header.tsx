@@ -5,11 +5,12 @@ import { Input } from "./ui/input"
 import { Button } from "./ui/button"
 import { motion } from "framer-motion"
 import { useMemeStore } from "@/store/meme-store"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 const HeroHeader = () => {
   const { setSearchQuery, searchQuery } = useMemeStore();
   const [localSearchQuery, setLocalSearchQuery] = useState("");
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   // sync local search with global search
   useEffect(() => {
@@ -19,8 +20,25 @@ const HeroHeader = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLocalSearchQuery(value);
-    setSearchQuery(value);
+    
+    // Debounce the search query update
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    
+    debounceTimer.current = setTimeout(() => {
+      setSearchQuery(value);
+    }, 500); // 500ms debounce delay
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="w-full md:mt-32 mt-12 flex flex-col gap-6 items-center justify-center md:text-center text-left">
