@@ -118,11 +118,18 @@ const MemeContainer = () => {
                         loading="lazy"
                     />
                 )}
-                {item.isGif && (
-                    <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                        GIF
-                    </div>
-                )}
+                <div className="absolute top-2 right-2 flex items-center gap-1">
+                    {item.isGif && (
+                        <div className="bg-black/60 text-white text-xs px-2 py-1 rounded">
+                            GIF
+                        </div>
+                    )}
+                    {item.source && (
+                        <div className="bg-purple-600/80 text-white text-xs px-2 py-1 rounded capitalize">
+                            {item.source}
+                        </div>
+                    )}
+                </div>
             </div>
             <p className="md:text-sm text-xs font-medium text-center mt-2 text-gray-200">
                 {item.name}
