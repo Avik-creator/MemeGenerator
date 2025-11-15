@@ -8,16 +8,45 @@ interface MemePreviewPropsType {
   image: string | null;
   memeRef: Ref<HTMLDivElement> | null;
   text: text;
+  setText: React.Dispatch<React.SetStateAction<text>>;
 }
 
 const MemePreview = ({
   image,
   memeRef,
   text,
+  setText,
 }: MemePreviewPropsType) => {
   const [isDragging, setIsDragging] = useState(false);
   const guideXPercent = 50;
   const guideYPercent = 50;
+
+  const handleDragEnd = (type: "top" | "bottom", event: any, info: any) => {
+    if (!memeRef || !('current' in memeRef) || !memeRef.current) return;
+    
+    const container = memeRef.current;
+    const rect = container.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    const xPercent = (x / rect.width) * 100;
+    const yPercent = (y / rect.height) * 100;
+    
+    if (type === "top") {
+      setText(prev => ({
+        ...prev,
+        topPosXPercent: xPercent,
+        topPosYPercent: yPercent
+      }));
+    } else {
+      setText(prev => ({
+        ...prev,
+        bottomPosXPercent: xPercent,
+        bottomPosYPercent: yPercent
+      }));
+    }
+    setIsDragging(false);
+  };
 
   return (
     <div className="lg:w-3/5 w-full">
@@ -55,8 +84,7 @@ const MemePreview = ({
                 drag
                 dragMomentum={false}
                 onDragStart={() => setIsDragging(true)}
-                onDrag={() => { }}
-                onDragEnd={() => setIsDragging(false)}
+                onDragEnd={(event, info) => handleDragEnd("top", event, info)}
                 style={{
                   letterSpacing: `${text.topLetterSpacing}px`,
                   opacity: `${text.topTextOpacity}%`,
@@ -83,8 +111,7 @@ const MemePreview = ({
                 drag
                 dragMomentum={false}
                 onDragStart={() => setIsDragging(true)}
-                onDrag={() => { }}
-                onDragEnd={() => setIsDragging(false)}
+                onDragEnd={(event, info) => handleDragEnd("bottom", event, info)}
                 style={{
                   letterSpacing: `${text.bottomLetterSpacing}px`,
                   opacity: `${text.bottomTextOpacity}%`,

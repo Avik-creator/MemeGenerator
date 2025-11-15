@@ -68,6 +68,7 @@ const Meme = () => {
                     image={image}
                     memeRef={memeRef}
                     text={text}
+                    setText={setText}
                 />
             </motion.div>
         </>
